@@ -13,6 +13,8 @@ def run_agent(question):
         "aadhaar",
         "bank",
         "marks",
+        "amount",
+        "apply",
     ]
 
     if any(word in question.lower() for word in keywords):

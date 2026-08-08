@@ -1,7 +1,9 @@
-from agent import run_agent
+from src.agent import run_agent
+
 
 print("🤖 AI Agent Started")
 print("Type 'exit' to quit.\n")
+
 
 while True:
     question = input("You: ")
