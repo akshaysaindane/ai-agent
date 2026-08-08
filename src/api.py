@@ -1,6 +1,6 @@
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from fastapi.staticfiles import StaticFiles
 
 from src.agent import run_agent
 
@@ -13,9 +13,7 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {
-        "message": "AI Scholarship Agent is running!"
-    }
+    return FileResponse("src/static/index.html")
 
 
 @app.post("/chat")
@@ -26,6 +24,3 @@ def chat(data: Question):
         "question": data.question,
         "answer": answer
     }
-
-
-app.mount("/ui", StaticFiles(directory="src/static", html=True), name="static")
