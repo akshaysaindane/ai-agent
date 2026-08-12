@@ -4,4 +4,4 @@ groq
 python-dotenv
 langchain-community
 pypdf
-sentence-transformers
+langchain-text-splitters
