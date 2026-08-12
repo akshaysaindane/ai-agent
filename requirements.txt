@@ -3,3 +3,4 @@ uvicorn
 groq
 python-dotenv
 langchain-community
+pypdf
