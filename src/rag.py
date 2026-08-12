@@ -1,42 +1,55 @@
 import re
 from collections import Counter
+from pathlib import Path
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-# Load PDF
-loader = PyPDFLoader("documents/scholarship_info.pdf")
-documents = loader.load()
-
-
-# Split PDF into smaller sections
-splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
-    chunk_overlap=50
-)
-
-docs = splitter.split_documents(documents)
+doc_data = None
 
 
 def tokenize(text):
     return re.findall(r"\b[a-zA-Z0-9]+\b", text.lower())
 
 
-# Prepare searchable text
-doc_data = []
+def load_documents():
+    global doc_data
 
-for doc in docs:
-    words = tokenize(doc.page_content)
-    word_counts = Counter(words)
+    if doc_data is not None:
+        return doc_data
 
-    doc_data.append({
-        "text": doc.page_content,
-        "words": word_counts
-    })
+    pdf_path = Path(__file__).resolve().parent.parent / "documents" / "scholarship_info.pdf"
+
+    loader = PyPDFLoader(str(pdf_path))
+    documents = loader.load()
+
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=500,
+        chunk_overlap=50
+    )
+
+    docs = splitter.split_documents(documents)
+
+    data = []
+
+    for doc in docs:
+        words = tokenize(doc.page_content)
+        word_counts = Counter(words)
+
+        data.append({
+            "text": doc.page_content,
+            "words": word_counts
+        })
+
+    doc_data = data
+
+    return doc_data
 
 
 def search_pdf(question):
+    documents = load_documents()
+
     question_words = set(tokenize(question))
 
     if not question_words:
@@ -44,7 +57,7 @@ def search_pdf(question):
 
     scored_docs = []
 
-    for item in doc_data:
+    for item in documents:
         score = sum(
             count
             for word, count in item["words"].items()
@@ -54,13 +67,14 @@ def search_pdf(question):
         if score > 0:
             scored_docs.append((score, item["text"]))
 
-    # Highest matching sections first
-    scored_docs.sort(reverse=True, key=lambda x: x[0])
+    scored_docs.sort(
+        reverse=True,
+        key=lambda x: x[0]
+    )
 
     if not scored_docs:
         return "No relevant information found."
 
-    # Return top 3 results
     return "\n\n".join(
         text for score, text in scored_docs[:3]
     )
