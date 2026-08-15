@@ -3,23 +3,39 @@ from src.llm import ask_llm
 
 
 def run_agent(question):
+
     keywords = [
         "scholarship",
         "document",
         "eligibility",
         "income",
         "benefit",
+        "benefits",
         "deadline",
         "aadhaar",
         "bank",
         "marks",
         "amount",
         "apply",
+        "application",
+        "criteria",
     ]
 
-    if any(word in question.lower() for word in keywords):
+    question_lower = question.lower()
+
+    if any(word in question_lower for word in keywords):
+
         print("📄 Using RAG Tool...")
-        return search_pdf(question)
+
+        context = search_pdf(question)
+
+        if context == "No relevant information found.":
+            return ask_llm(question)
+
+        print("🤖 Using Groq LLM with RAG context...")
+
+        return ask_llm(question, context)
 
     print("🤖 Using Groq LLM...")
+
     return ask_llm(question)
